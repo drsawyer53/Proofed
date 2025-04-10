@@ -1,38 +1,37 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { auth, signInWithEmailAndPassword } from '../firebase'; // Adjust the path if necessary
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebase'; // Assuming firebase.js is in the same folder
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Successfully logged in
-        navigation.navigate('Home'); // Redirect to home screen or wherever
-      })
-      .catch((error) => {
-        Alert.alert("Error", error.message);
-      });
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigation.navigate('Landing'); // Navigate to the home screen or dashboard after successful login
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   return (
     <View style={styles.container}>
       <TextInput
-        style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
+        style={styles.input}
       />
       <TextInput
-        style={styles.input}
         placeholder="Password"
-        value={password}
         secureTextEntry
+        value={password}
         onChangeText={setPassword}
+        style={styles.input}
       />
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Log In" onPress={handleLogin} />
     </View>
   );
 }
@@ -41,15 +40,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
   input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 10,
+    height: 50,
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    marginBottom: 16,
+    paddingLeft: 10,
   },
 });

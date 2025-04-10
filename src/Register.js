@@ -1,54 +1,52 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { auth, createUserWithEmailAndPassword, updateProfile } from '../firebase'; // Adjust path if needed
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebase'; // Assuming firebase.js is in the same folder
 
 export default function Register({ navigation }) {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
 
-  const handleRegister = () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        updateProfile(user, {
-          displayName: name,
-        })
-          .then(() => {
-            // Successfully updated profile
-            navigation.navigate('Home'); // Redirect to home screen or wherever
-          })
-          .catch((error) => {
-            Alert.alert("Error", error.message);
-          });
-      })
-      .catch((error) => {
-        Alert.alert("Error", error.message);
-      });
+  const handleSignUp = async () => {
+    try {
+      // Create user with email and password
+      await createUserWithEmailAndPassword(auth, email, password);
+      
+      // You can add further user details like name here
+      // Optionally, update the profile with the user's name
+      const user = auth.currentUser;
+      await user.updateProfile({ displayName: name });
+
+      // Navigate to login screen after sign up
+      navigation.navigate('Login');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   return (
     <View style={styles.container}>
       <TextInput
-        style={styles.input}
         placeholder="Name"
         value={name}
         onChangeText={setName}
+        style={styles.input}
       />
       <TextInput
-        style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
+        style={styles.input}
       />
       <TextInput
-        style={styles.input}
         placeholder="Password"
-        value={password}
         secureTextEntry
+        value={password}
         onChangeText={setPassword}
+        style={styles.input}
       />
-      <Button title="Register" onPress={handleRegister} />
+      <Button title="Sign Up" onPress={handleSignUp} />
     </View>
   );
 }
@@ -57,15 +55,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
   input: {
-    width: '100%',
-    padding: 10,
-    marginBottom: 10,
+    height: 50,
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    marginBottom: 16,
+    paddingLeft: 10,
   },
 });
