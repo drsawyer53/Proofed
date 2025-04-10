@@ -1,27 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { View, Button, Text } from 'react-native';
-import { auth } from './firebase'; // Assuming firebase.js is in the same folder
+import { View, Button, Text, StyleSheet } from 'react-native';
+import { auth } from '../firebase';
 
 export default function Landing({ navigation }) {
-  const [user, setUser] = useState(null);
-
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(setUser);
-    return unsubscribe; // Clean up on component unmount
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Home' }],
+        });
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      {user ? (
-        <Text>Welcome, {user.displayName || 'User'}!</Text>
-      ) : (
-        <>
-          <Button title="Register" onPress={() => navigation.navigate('Register')} />
-          <Button title="Login" onPress={() => navigation.navigate('Login')} />
-        </>
-      )}
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome to Proofed 🍷</Text>
+      <Button title="Login" onPress={() => navigation.navigate('Login')} />
+      <Button title="Register" onPress={() => navigation.navigate('Register')} />
     </View>
   );
 }
 
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+});

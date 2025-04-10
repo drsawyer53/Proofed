@@ -1,11 +1,11 @@
-import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import LandingScreen from './src/Landing';
+import RegisterScreen from './src/Register';
+import LoginScreen from './src/Login';
+import HomeScreen from './src/Main/HomeScreen'; // Import the HomeScreen
 import { createStackNavigator } from '@react-navigation/stack';
-import LandingScreen from './src/Landing'; 
-import RegisterScreen from './src/Register'; 
-import LoginScreen from './src/Login'; 
-import { auth } from './firebase'; // Import firebase auth
+import { auth } from './firebase'; // Firebase import
 
 const Stack = createStackNavigator();
 
@@ -13,40 +13,44 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Listen for authentication state changes
+    // Firebase listener to track user authentication status
     const unsubscribe = auth.onAuthStateChanged(setUser);
-    return unsubscribe; // Clean up on component unmount
+
+    // Clean up the listener when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Landing">
-        {user ? (
-          // If the user is authenticated, show the Landing screen
+      <Stack.Navigator initialRouteName={user ? 'Home' : 'Landing'}>
+        <Stack.Screen
+          name="Landing"
+          component={LandingScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{ headerShown: true, title: 'Register' }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: true, title: 'Login' }}
+        />
+        {/* Conditionally render HomeScreen if user is logged in */}
+        {user && (
           <Stack.Screen
-            name="Landing"
-            component={LandingScreen}
+            name="Home"
+            component={HomeScreen}
             options={{ headerShown: false }}
           />
-        ) : (
-          <>
-            {/* If the user is not authenticated, show Register and Login screens */}
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-              options={{ headerShown: true, title: 'Register' }}
-            />
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ headerShown: true, title: 'Login' }}
-            />
-          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
 
 
 
