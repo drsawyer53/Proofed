@@ -10,7 +10,8 @@ import {
   Platform,
 } from 'react-native';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 
 export default function Register({ navigation }) {
   const [name, setName] = useState('');
@@ -24,8 +25,14 @@ export default function Register({ navigation }) {
 
       await updateProfile(user, { displayName: name });
 
+      // ✅ Create user document in Firestore for friend lookup
+      await setDoc(doc(db, 'users', user.uid), {
+        name: name,
+        email: email.toLowerCase(),
+      });
+
       Alert.alert('Success!', 'Account created successfully!');
-      navigation.navigate('Home'); // ✅ updated here
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     } catch (error) {
       Alert.alert('Registration Error', error.message);
     }

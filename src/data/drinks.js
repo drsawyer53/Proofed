@@ -1,0 +1,20 @@
+export const drinkSuggestions = [
+    'Old Fashioned',
+    'Negroni',
+    'Espresso Martini',
+    'Cabernet Sauvignon',
+    'Chardonnay',
+    'IPA',
+    'Pale Ale',
+    'Sauvignon Blanc',
+    'Manhattan',
+    'Margarita',
+    'Whiskey Sour',
+    'Moscow Mule',
+    'Pinot Noir',
+    'Tequila Sunrise',
+    'Gin and Tonic',
+    'Rum and Coke',
+    'Amaretto Sour',
+  ];
+  
