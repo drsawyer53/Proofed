@@ -17,10 +17,18 @@ export default function Login({ navigation }) {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
+    console.log('🚀 Login button pressed');
     try {
+      if (!email || !password) {
+        alert('Email and password required');
+        return;
+      }
+
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      console.log('✅ Logged in as:', auth.currentUser?.email);
+      navigation.navigate('Home');
     } catch (error) {
+      console.log('❌ Login error:', error);
       Alert.alert('Login Error', error.message);
     }
   };

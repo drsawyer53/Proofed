@@ -25,7 +25,7 @@ export default function Register({ navigation }) {
       await updateProfile(user, { displayName: name });
 
       Alert.alert('Success!', 'Account created successfully!');
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      navigation.navigate('Home'); // ✅ updated here
     } catch (error) {
       Alert.alert('Registration Error', error.message);
     }
