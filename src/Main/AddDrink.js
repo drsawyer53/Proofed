@@ -10,35 +10,49 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { drinkSuggestions } from '../data/drinks';
+import { collection, addDoc } from 'firebase/firestore';
+import { auth, db } from '../../firebase';
 
 const drinkTypes = ['Wine', 'Beer', 'Whiskey', 'Cocktail', 'Vodka', 'Tequila'];
 
 export default function AddDrink() {
+  const navigation = useNavigation();
   const [name, setName] = useState('');
   const [type, setType] = useState(drinkTypes[0]);
   const [initialReaction, setInitialReaction] = useState(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [comment, setComment] = useState('');
 
-  const navigation = useNavigation();
-
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!name || !type || !initialReaction) {
       alert('Please fill out all fields.');
       return;
     }
-    navigation.navigate('CompareDrink', {
-      name,
-      type,
-      reaction: initialReaction,
-    });
-  };
 
-  const filteredSuggestions = name
-    ? drinkSuggestions.filter((d) =>
-        d.toLowerCase().includes(name.toLowerCase())
-      )
-    : [];
+    try {
+      const user = auth.currentUser;
+      const drinkData = {
+        userId: user.uid,
+        name,
+        type,
+        reaction: initialReaction,
+        comment,
+        createdAt: new Date(),
+      };
+
+      // Save to Firestore (temporary if skipping ranking)
+      await addDoc(collection(db, 'drinks'), drinkData);
+      console.log('✅ Drink saved to Firestore');
+
+      navigation.navigate('CompareDrink', {
+        name,
+        type,
+        reaction: initialReaction,
+      });
+    } catch (err) {
+      console.error('❌ Error saving drink:', err);
+      alert('Failed to save drink');
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -55,41 +69,20 @@ export default function AddDrink() {
           style={styles.input}
           placeholder="Drink Name"
           value={name}
-          onChangeText={(text) => {
-            setName(text);
-            setShowSuggestions(true);
-          }}
+          onChangeText={setName}
         />
-
-        {showSuggestions && filteredSuggestions.length > 0 && (
-          <View style={styles.suggestionsBox}>
-            {filteredSuggestions.map((item) => (
-              <TouchableOpacity
-                key={item}
-                style={styles.suggestionItem}
-                onPress={() => {
-                  setName(item);
-                  setShowSuggestions(false);
-                }}
-              >
-                <Text>{item}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
 
         <View style={styles.dropdown}>
           <Text style={styles.label}>Type:</Text>
           {drinkTypes.map((item) => (
             <TouchableOpacity
               key={item}
-              style={[
-                styles.typeOption,
-                type === item && { backgroundColor: '#b81c1c' },
-              ]}
+              style={[styles.typeOption, type === item && { backgroundColor: '#b81c1c' }]}
               onPress={() => setType(item)}
             >
-              <Text style={[styles.optionText, type === item && { color: '#fff' }]}> {item} </Text>
+              <Text style={[styles.optionText, type === item && { color: '#fff' }]}>
+                {item}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -118,6 +111,14 @@ export default function AddDrink() {
           </TouchableOpacity>
         </View>
 
+        <TextInput
+          style={[styles.input, { height: 100 }]}
+          placeholder="What stood out to you? (optional)"
+          value={comment}
+          onChangeText={setComment}
+          multiline
+        />
+
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.nextButtonText}>Next</Text>
         </TouchableOpacity>
@@ -133,7 +134,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
-    paddingBottom: 40,
   },
   title: {
     fontSize: 28,
@@ -148,21 +148,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 15,
-    marginBottom: 12,
+    marginBottom: 20,
     backgroundColor: '#fff',
-  },
-  suggestionsBox: {
-    maxHeight: 120,
-    marginBottom: 16,
-    backgroundColor: '#fff',
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  suggestionItem: {
-    padding: 10,
-    borderBottomColor: '#eee',
-    borderBottomWidth: 1,
   },
   dropdown: {
     marginBottom: 24,
